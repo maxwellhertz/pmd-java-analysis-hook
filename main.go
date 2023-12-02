@@ -9,15 +9,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/go-git/go-git/v5"
 )
 
 const (
-	PmdReleasePkg   = "pmd-bin-6.55.0"
-	PmdReleaseUrl   = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.55.0/pmd-bin-6.55.0.zip"
-	PmdLocalPath    = "./target/pmd"
-	PmdLocalBinPath = PmdLocalPath + "/" + PmdReleasePkg + "/" + "bin"
+	PmdReleasePkg     = "pmd-bin-6.55.0"
+	PmdReleaseUrl     = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.55.0/pmd-bin-6.55.0.zip"
+	PmdLocalPath      = "./target/pmd"
+	PmdLocalBinPath   = PmdLocalPath + "/" + PmdReleasePkg + "/" + "bin"
 	PmdDefaultRuleSet = "rulesets/java/quickstart.xml"
 
 	AppName = "pmd-java-pre-commit-hook"
@@ -62,7 +63,7 @@ func main() {
 	if len(args) > 1 {
 		ruleSet = args[1]
 	}
-	pmdCmd := exec.Command(filepath.Join(pmdBinPath, getPmdScript()), getPmdCommand(),  "-R", ruleSet, "-f", "text", "--cache", filepath.Join(PmdLocalPath, "cache"), "--file-list", pmdTargetFile)
+	pmdCmd := exec.Command(filepath.Join(pmdBinPath, getPmdScript()), getPmdCommand(), "-R", ruleSet, "-f", "text", "--cache", filepath.Join(PmdLocalPath, "cache"), "--file-list", pmdTargetFile)
 	pmdCmd.Stdout = os.Stdout
 	pmdCmd.Stderr = os.Stderr
 	err = pmdCmd.Run()
@@ -151,8 +152,8 @@ func createFile(path string) (*os.File, error) {
 }
 
 func getPmdScript() string {
-	switch os.Getenv("OS") {
-	case "Windows_NT":
+	switch runtime.GOOS {
+	case "windows":
 		return "pmd.bat"
 	default:
 		return "run.sh"
@@ -160,8 +161,8 @@ func getPmdScript() string {
 }
 
 func getPmdCommand() string {
-	switch os.Getenv("OS") {
-	case "Windows_NT":
+	switch runtime.GOOS {
+	case "windows":
 		return ""
 	default:
 		return "pmd"
