@@ -65,14 +65,7 @@ func main() {
 	if err == nil {
 		os.Exit(0)
 	}
-
-	fmt.Print("PMD reported error! Still commit the changes? [y/N]: ")
-	var input string
-	fmt.Scan(&input)
-	if strings.TrimSpace(input) == "N" {
-		os.Exit(1)
-	}
-	os.Exit(0)
+	os.Exit(1)
 }
 
 func getStagedJavaFiles() ([]string, error) {
