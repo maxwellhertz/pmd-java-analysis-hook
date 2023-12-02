@@ -101,10 +101,6 @@ func getStagedJavaFiles() ([]string, error) {
 }
 
 func lookupPmd() (bool, string) {
-	pmdPath, err := exec.LookPath("pmd")
-	if err == nil {
-		return true, pmdPath
-	}
 	fileInfo, err := os.Stat(PmdLocalBinPath)
 	if os.IsNotExist(err) {
 		return false, ""
