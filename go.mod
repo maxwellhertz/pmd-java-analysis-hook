@@ -1,4 +1,4 @@
-module github.com/mmmaxwellhertz/pmd-java-analysis
+module github.com/maxwellhertz/pmd-java-analysis
 
 go 1.20
 
