@@ -18,6 +18,7 @@ const (
 	PmdReleaseUrl   = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.55.0/pmd-bin-6.55.0.zip"
 	PmdLocalPath    = "./target/pmd"
 	PmdLocalBinPath = PmdLocalPath + "/" + PmdReleasePkg + "/" + "bin"
+	PmdDefaultRuleSet = "rulesets/java/quickstart.xml"
 
 	AppName = "pmd-java-pre-commit-hook"
 )
@@ -56,7 +57,12 @@ func main() {
 		}
 	}
 
-	pmdCmd := exec.Command(filepath.Join(pmdBinPath, getPmdScript()), getPmdCommand(), "-f", "text", "-R", "rulesets/java/quickstart.xml", "--cache", filepath.Join(PmdLocalPath, "cache"), "--file-list", pmdTargetFile)
+	args := os.Args
+	ruleSet := PmdDefaultRuleSet
+	if len(args) > 1 {
+		ruleSet = args[1]
+	}
+	pmdCmd := exec.Command(filepath.Join(pmdBinPath, getPmdScript()), getPmdCommand(),  "-R", ruleSet, "-f", "text", "--cache", filepath.Join(PmdLocalPath, "cache"), "--file-list", pmdTargetFile)
 	pmdCmd.Stdout = os.Stdout
 	pmdCmd.Stderr = os.Stderr
 	err = pmdCmd.Run()
