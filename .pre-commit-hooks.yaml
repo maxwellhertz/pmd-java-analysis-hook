@@ -1,0 +1,7 @@
+- id: pmd-java-analysis
+  name: PMD Java Analysis
+  description: This hook analyze staged Java files using PMD.
+  entry: pmd-java-analysis
+  language: golang
+  types: [text]
+  verbose: true
