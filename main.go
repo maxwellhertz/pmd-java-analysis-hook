@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/go-git/go-git/v5"
 )
@@ -58,19 +59,35 @@ func main() {
 		}
 	}
 
-	args := os.Args
-	ruleSet := PmdDefaultRuleSet
-	if len(args) > 1 {
-		ruleSet = args[1]
-	}
-	pmdCmd := exec.Command(filepath.Join(pmdBinPath, getPmdScript()), getPmdCommand(), "-R", ruleSet, "-f", "text", "--cache", filepath.Join(PmdLocalPath, "cache"), "--file-list", pmdTargetFile)
+	args := parseArguments(os.Args)
+	pmdCmd := exec.Command(filepath.Join(pmdBinPath, getPmdScript()), getPmdCommand(), "-R", args.RuleSet, "-f", "text", "--cache", filepath.Join(PmdLocalPath, "cache"), "--file-list", pmdTargetFile)
 	pmdCmd.Stdout = os.Stdout
 	pmdCmd.Stderr = os.Stderr
-	err = pmdCmd.Run()
-	if err == nil {
+	if err := pmdCmd.Run(); err == nil || args.Suppressed {
 		os.Exit(0)
 	}
 	os.Exit(1)
+}
+
+func parseArguments(args []string) Arguments {
+	switch len(args) {
+	case 1:
+		return Arguments{
+			RuleSet:    args[0],
+			Suppressed: false,
+		}
+	case 2:
+		suppressed, _ := strconv.ParseBool(args[1])
+		return Arguments{
+			RuleSet:    args[0],
+			Suppressed: suppressed,
+		}
+	default:
+		return Arguments{
+			RuleSet:    PmdDefaultRuleSet,
+			Suppressed: false,
+		}
+	}
 }
 
 func getStagedJavaFiles() ([]string, error) {
@@ -89,7 +106,7 @@ func getStagedJavaFiles() ([]string, error) {
 
 	stagedJavaFiles := make([]string, 0, len(status))
 	for srcFilePath, fileStatus := range status {
-		if fileStatus.Staging != git.Unmodified && fileStatus.Staging != git.Untracked && filepath.Ext(srcFilePath) != ".java" {
+		if fileStatus.Staging == git.Unmodified || fileStatus.Staging == git.Untracked || filepath.Ext(srcFilePath) != ".java" {
 			continue
 		}
 		stagedJavaFiles = append(stagedJavaFiles, srcFilePath)
